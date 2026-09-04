@@ -41,6 +41,12 @@ export const EventCard: React.FC<EventCardProps> = ({
     }
   };
 
+  const isPast = new Date(event.event_date).getTime() < Date.now();
+  const imageUri =
+    !event.image_url || event.image_url.includes('1509198397868-475647b2a1e5')
+      ? 'https://images.unsplash.com/photo-1518709268805-4e9042af9f23?auto=format&fit=crop&w=1200&q=80'
+      : event.image_url;
+
   if (compact) {
     return (
       <TouchableOpacity
@@ -49,7 +55,7 @@ export const EventCard: React.FC<EventCardProps> = ({
         style={styles.compactCard}
       >
         <Image
-          source={{ uri: event.image_url }}
+          source={{ uri: imageUri }}
           style={styles.compactImage}
           resizeMode="cover"
         />
@@ -58,11 +64,18 @@ export const EventCard: React.FC<EventCardProps> = ({
             <View style={styles.categoryBadge}>
               <Text style={styles.categoryText}>{event.category}</Text>
             </View>
-            {isObserved && (
-              <View style={styles.observedTag}>
-                <Text style={styles.observedText}>🌟 Visto</Text>
-              </View>
-            )}
+            <View style={styles.actionRow}>
+              {isPast && (
+                <View style={styles.pastTag}>
+                  <Text style={styles.pastText}>Passato</Text>
+                </View>
+              )}
+              {isObserved && (
+                <View style={styles.observedTag}>
+                  <Text style={styles.observedText}>🌟 Visto</Text>
+                </View>
+              )}
+            </View>
           </View>
           <Text style={styles.compactTitle} numberOfLines={2}>
             {event.title}
@@ -83,7 +96,7 @@ export const EventCard: React.FC<EventCardProps> = ({
       style={styles.card}
     >
       <Image
-        source={{ uri: event.image_url }}
+        source={{ uri: imageUri }}
         style={styles.image}
         resizeMode="cover"
       />
@@ -94,6 +107,11 @@ export const EventCard: React.FC<EventCardProps> = ({
             <Text style={styles.categoryText}>{event.category}</Text>
           </View>
           <View style={styles.actionRow}>
+            {isPast && (
+              <View style={styles.pastTag}>
+                <Text style={styles.pastText}>Passato</Text>
+              </View>
+            )}
             {isObserved && (
               <View style={styles.observedTag}>
                 <Text style={styles.observedText}>🌟 Visto</Text>
@@ -235,6 +253,20 @@ const styles = StyleSheet.create({
   observedText: {
     color: THEME.colors.gold,
     fontSize: 11,
+    fontWeight: '700',
+  },
+  pastTag: {
+    backgroundColor: 'rgba(107, 114, 128, 0.2)',
+    paddingHorizontal: 7,
+    paddingVertical: 3,
+    borderRadius: 4,
+    marginRight: 6,
+    borderWidth: 1,
+    borderColor: 'rgba(107, 114, 128, 0.3)',
+  },
+  pastText: {
+    color: '#9CA3AF',
+    fontSize: 10,
     fontWeight: '700',
   },
   favButton: {
