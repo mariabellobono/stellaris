@@ -97,8 +97,39 @@ export const profileStyles = StyleSheet.create({
     fontSize: 14,
     fontWeight: '700',
   },
+  dividerRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginVertical: 14,
+  },
+  dividerLine: {
+    flex: 1,
+    height: 1,
+    backgroundColor: THEME.colors.surfaceBorder,
+  },
+  dividerText: {
+    color: THEME.colors.textMuted,
+    fontSize: 12,
+    marginHorizontal: 10,
+    textTransform: 'uppercase',
+    letterSpacing: 0.5,
+  },
+  googleBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: '#FFFFFF',
+    borderRadius: 8,
+    paddingVertical: 11,
+    gap: 8,
+  },
+  googleBtnText: {
+    color: '#1F2937',
+    fontSize: 14,
+    fontWeight: '700',
+  },
   switchModeBtn: {
-    marginTop: 10,
+    marginTop: 12,
     alignItems: 'center',
   },
   switchModeText: {
