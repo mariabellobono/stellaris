@@ -180,6 +180,45 @@ export function useProfile() {
     }
   };
 
+  // Handle Google OAuth
+  const [googleLoading, setGoogleLoading] = useState<boolean>(false);
+
+  const handleGoogleAuth = async () => {
+    if (!isSupabaseConfigured()) {
+      Alert.alert(
+        'Supabase non configurato',
+        'Stai usando l\'app in modalità Locale/Offline. Per abilitare il cloud inserisci le tue chiavi Supabase in .env.'
+      );
+      return;
+    }
+
+    setGoogleLoading(true);
+    try {
+      const user = await SupabaseService.signInWithGoogle();
+      if (user) {
+        setUserEmail(user.email || 'Utente Google');
+        setShowAuthCard(false);
+        Alert.alert('Accesso riuscito!', `Benvenuto, ${user.email || 'Utente Google'}`);
+        await loadProfileData();
+      }
+    } catch (err: any) {
+      const msg = err.message || '';
+      if (
+        msg.toLowerCase().includes('provider is not enabled') ||
+        msg.toLowerCase().includes('unsupported provider')
+      ) {
+        Alert.alert(
+          'Google Auth non abilitato su Supabase',
+          'Per usare Google Login, abilita il provider Google nella dashboard di Supabase (Authentication -> Providers -> Google) inserendo Client ID e Secret di Google Cloud.'
+        );
+      } else {
+        Alert.alert('Errore Accesso Google', msg || 'Accesso annullato o non riuscito.');
+      }
+    } finally {
+      setGoogleLoading(false);
+    }
+  };
+
   // Handle Logout
   const handleSignOut = async () => {
     try {
@@ -221,6 +260,7 @@ export function useProfile() {
     otpInput,
     setOtpInput,
     authLoading,
+    googleLoading,
     showAuthCard,
     setShowAuthCard,
 
@@ -233,6 +273,7 @@ export function useProfile() {
     onRefresh,
     handleAuth,
     handleVerifyOtp,
+    handleGoogleAuth,
     handleSignOut,
     handleOpenDetail,
   };
