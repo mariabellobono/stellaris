@@ -157,6 +157,11 @@ export default function EventDetailScreen() {
     minute: '2-digit',
   });
 
+  const imageUri =
+    !event.image_url || event.image_url.includes('1509198397868-475647b2a1e5')
+      ? 'https://images.unsplash.com/photo-1518709268805-4e9042af9f23?auto=format&fit=crop&w=1200&q=80'
+      : event.image_url;
+
   return (
     <>
       <Stack.Screen
@@ -169,14 +174,14 @@ export default function EventDetailScreen() {
         {/* Copertina Full-Width */}
         <View style={styles.imageContainer}>
           <Image
-            source={{ uri: event.image_url }}
+            source={{ uri: imageUri }}
             style={styles.image}
             resizeMode="cover"
           />
           <View style={styles.imageBadge}>
             <Text style={styles.imageBadgeText}>{event.category}</Text>
           </View>
-        </View>
+            </View>
 
         <View style={styles.body}>
           <Text style={styles.title}>{event.title}</Text>
