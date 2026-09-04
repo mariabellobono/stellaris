@@ -34,9 +34,19 @@ export const IssWidget: React.FC = () => {
       <View style={styles.header}>
         <View style={styles.titleRow}>
           <View style={styles.pulseDot} />
-          <Text style={styles.title}>TRACKER LIVE STAZIONE SPAZIALE (ISS)</Text>
+          <Text style={styles.title} numberOfLines={1} ellipsizeMode="tail">
+            TRACKER LIVE ISS
+          </Text>
         </View>
-        <Text style={styles.badge}>AGGIORNA OGNI 10S</Text>
+        <View style={styles.badgeContainer}>
+          <Ionicons
+            name="sync-outline"
+            size={11}
+            color={THEME.colors.accent}
+            style={styles.badgeIcon}
+          />
+          <Text style={styles.badge}>Aggiorna ogni 10s</Text>
+        </View>
       </View>
 
       {loading && !iss ? (
@@ -92,11 +102,14 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginBottom: 12,
+    marginBottom: 14,
+    gap: 8,
   },
   titleRow: {
     flexDirection: 'row',
     alignItems: 'center',
+    flex: 1,
+    minWidth: 0,
   },
   pulseDot: {
     width: 8,
@@ -104,12 +117,28 @@ const styles = StyleSheet.create({
     borderRadius: 4,
     backgroundColor: THEME.colors.accent,
     marginRight: 8,
+    flexShrink: 0,
   },
   title: {
     color: '#FFFFFF',
     fontSize: 12,
     fontWeight: '800',
     letterSpacing: 0.5,
+    flexShrink: 1,
+  },
+  badgeContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: 'rgba(255, 255, 255, 0.06)',
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.08)',
+    flexShrink: 0,
+  },
+  badgeIcon: {
+    marginRight: 4,
   },
   badge: {
     color: THEME.colors.textSecondary,
