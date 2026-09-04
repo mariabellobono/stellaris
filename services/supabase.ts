@@ -5,6 +5,8 @@ import { StorageService } from './storage';
 const SUPABASE_URL = process.env.EXPO_PUBLIC_SUPABASE_URL || 'https://your-project.supabase.co';
 const SUPABASE_ANON_KEY = process.env.EXPO_PUBLIC_SUPABASE_ANON_KEY || 'your-anon-key';
 
+import { fetchNasaAsteroids, fetchLiveMoonPhases } from './api/liveEvents';
+
 export const isSupabaseConfigured = (): boolean => {
   return (
     !SUPABASE_URL.includes('your-project') &&
@@ -21,36 +23,81 @@ export const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
 
 export const SupabaseService = {
   async getEvents(): Promise<AstroEvent[]> {
+    let dbEvents: AstroEvent[] = [];
+
     if (!isSupabaseConfigured()) {
-      return StorageService.getCachedEvents();
+      dbEvents = await StorageService.getCachedEvents();
+    } else {
+      try {
+        const { data, error } = await supabase
+          .from('events')
+          .select('*')
+          .order('event_date', { ascending: true });
+
+        if (!error && data && data.length > 0) {
+          dbEvents = data
+            .filter(
+              (item) =>
+                !item.id?.startsWith('e100') &&
+                !item.id?.startsWith('mock')
+            )
+            .map((item) => {
+              let imageUrl = item.image_url;
+              if (imageUrl && imageUrl.includes('1509198397868-475647b2a1e5')) {
+                imageUrl =
+                  'https://images.unsplash.com/photo-1518709268805-4e9042af9f23?auto=format&fit=crop&w=1200&q=80';
+              }
+              return {
+                id: item.id,
+                title: item.title,
+                category: item.category,
+                event_date: item.event_date,
+                instrument: item.instrument,
+                direction: item.direction,
+                description_tips: item.description_tips,
+                image_url: imageUrl,
+              };
+            });
+        } else if (error) {
+          console.warn('Errore query Supabase, uso cache:', error);
+          dbEvents = await StorageService.getCachedEvents();
+        } else {
+          // Tabella Supabase vuota: nessun evento statico da aggiungere
+          dbEvents = [];
+        }
+      } catch (err) {
+        console.warn('Connessione Supabase non riuscita, uso cache:', err);
+        dbEvents = await StorageService.getCachedEvents();
+      }
     }
 
+    // Unisci in tempo reale gli eventi dinamici dall'API NASA JPL e Open-Meteo
     try {
-      const { data, error } = await supabase
-        .from('events')
-        .select('*')
-        .order('event_date', { ascending: true });
+      const [asteroids, moonEvents] = await Promise.all([
+        fetchNasaAsteroids(),
+        fetchLiveMoonPhases(),
+      ]);
 
-      if (error || !data || data.length === 0) {
-        return StorageService.getCachedEvents();
-      }
+      const merged = [...dbEvents, ...moonEvents, ...asteroids];
+      const uniqueEvents = Array.from(
+        new Map(merged.map((ev) => [ev.id, ev])).values()
+      ).filter(
+        (ev) =>
+          !ev.id.startsWith('e100') &&
+          !ev.id.startsWith('mock') &&
+          !ev.image_url?.includes('1509198397868-475647b2a1e5')
+      );
 
-      const events: AstroEvent[] = data.map((item) => ({
-        id: item.id,
-        title: item.title,
-        category: item.category,
-        event_date: item.event_date,
-        instrument: item.instrument,
-        direction: item.direction,
-        description_tips: item.description_tips,
-        image_url: item.image_url,
-      }));
-
-      await StorageService.saveCachedEvents(events);
-      return events;
-    } catch (err) {
-      console.warn('Connessione Supabase non riuscita, uso cache:', err);
-      return StorageService.getCachedEvents();
+      await StorageService.saveCachedEvents(uniqueEvents);
+      return uniqueEvents;
+    } catch (e) {
+      console.warn('Errore fetch eventi live da NASA API:', e);
+      return dbEvents.filter(
+        (ev) =>
+          !ev.id.startsWith('e100') &&
+          !ev.id.startsWith('mock') &&
+          !ev.image_url?.includes('1509198397868-475647b2a1e5')
+      );
     }
   },
 
