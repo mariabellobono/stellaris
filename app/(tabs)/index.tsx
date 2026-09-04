@@ -33,8 +33,20 @@ export default function HomeScreen() {
       StorageService.getObserved(),
     ]);
 
-    // Prendi i primi 4 prossimi eventi
-    setUpcomingEvents(events.slice(0, 4));
+    // Filtra solo gli eventi futuri da oggi in poi (o di stasera)
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+
+    const futureEvents = events
+      .filter((e) => new Date(e.event_date) >= today)
+      .sort(
+        (a, b) =>
+          new Date(a.event_date).getTime() - new Date(b.event_date).getTime()
+      );
+
+    setUpcomingEvents(
+      futureEvents.length > 0 ? futureEvents.slice(0, 4) : events.slice(0, 4)
+    );
     setFavorites(favs);
     setObserved(obs);
   }, []);
