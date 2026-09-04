@@ -33,12 +33,14 @@ export default function ProfileScreen() {
     otpInput,
     setOtpInput,
     authLoading,
+    googleLoading,
     showAuthCard,
     setShowAuthCard,
     currentList,
     onRefresh,
     handleAuth,
     handleVerifyOtp,
+    handleGoogleAuth,
     handleSignOut,
     handleOpenDetail,
   } = useProfile();
@@ -146,7 +148,7 @@ export default function ProfileScreen() {
                   <TouchableOpacity
                     style={styles.submitBtn}
                     onPress={handleAuth}
-                    disabled={authLoading}
+                    disabled={authLoading || googleLoading}
                   >
                     {authLoading ? (
                       <ActivityIndicator size="small" color="#FFFFFF" />
@@ -154,6 +156,29 @@ export default function ProfileScreen() {
                       <Text style={styles.submitBtnText}>
                         {isAuthMode === 'login' ? 'Entra' : 'Registrati'}
                       </Text>
+                    )}
+                  </TouchableOpacity>
+
+                  {/* Separatore & Login Social con Google */}
+                  <View style={styles.dividerRow}>
+                    <View style={styles.dividerLine} />
+                    <Text style={styles.dividerText}>oppure</Text>
+                    <View style={styles.dividerLine} />
+                  </View>
+
+                  <TouchableOpacity
+                    style={styles.googleBtn}
+                    onPress={handleGoogleAuth}
+                    disabled={authLoading || googleLoading}
+                    activeOpacity={0.8}
+                  >
+                    {googleLoading ? (
+                      <ActivityIndicator size="small" color="#1F2937" />
+                    ) : (
+                      <>
+                        <Ionicons name="logo-google" size={18} color="#EA4335" />
+                        <Text style={styles.googleBtnText}>Continua con Google</Text>
+                      </>
                     )}
                   </TouchableOpacity>
 
