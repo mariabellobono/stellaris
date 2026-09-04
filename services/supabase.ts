@@ -1,7 +1,11 @@
 import { createClient } from '@supabase/supabase-js';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import * as WebBrowser from 'expo-web-browser';
+import * as Linking from 'expo-linking';
 import { AstroEvent, UserEventState } from '../types';
 import { StorageService } from './storage';
+
+WebBrowser.maybeCompleteAuthSession();
 
 const SUPABASE_URL = process.env.EXPO_PUBLIC_SUPABASE_URL || 'https://your-project.supabase.co';
 const SUPABASE_ANON_KEY = process.env.EXPO_PUBLIC_SUPABASE_ANON_KEY || 'your-anon-key';
@@ -150,5 +154,67 @@ export const SupabaseService = {
     } catch {
       return [];
     }
+  },
+
+  async signInWithGoogle(): Promise<any> {
+    if (!isSupabaseConfigured()) {
+      throw new Error('Supabase non è configurato con chiavi valide in .env');
+    }
+
+    const redirectUrl = Linking.createURL('auth/callback');
+
+    const { data, error } = await supabase.auth.signInWithOAuth({
+      provider: 'google',
+      options: {
+        redirectTo: redirectUrl,
+        skipBrowserRedirect: true,
+      },
+    });
+
+    if (error) throw error;
+    if (!data?.url) {
+      throw new Error('Impossibile ottenere l\'URL di autenticazione da Supabase.');
+    }
+
+    const result = await WebBrowser.openAuthSessionAsync(data.url, redirectUrl);
+
+    if (result.type === 'success' && result.url) {
+      const url = result.url;
+      const params: Record<string, string> = {};
+      const hashIndex = url.indexOf('#');
+      const queryIndex = url.indexOf('?');
+
+      let searchPart = '';
+      if (hashIndex !== -1) {
+        searchPart = url.substring(hashIndex + 1);
+      } else if (queryIndex !== -1) {
+        searchPart = url.substring(queryIndex + 1);
+      }
+
+      if (searchPart) {
+        const pairs = searchPart.split('&');
+        for (const pair of pairs) {
+          const [k, v] = pair.split('=');
+          if (k && v) {
+            params[decodeURIComponent(k)] = decodeURIComponent(v);
+          }
+        }
+      }
+
+      if (params.access_token && params.refresh_token) {
+        const { data: sessionData, error: sessionErr } = await supabase.auth.setSession({
+          access_token: params.access_token,
+          refresh_token: params.refresh_token,
+        });
+        if (sessionErr) throw sessionErr;
+        return sessionData.user;
+      } else if (params.code) {
+        const { data: codeData, error: codeErr } =
+          await supabase.auth.exchangeCodeForSession(params.code);
+        if (codeErr) throw codeErr;
+        return codeData.user;
+      }
+    }
+    return null;
   },
 };
