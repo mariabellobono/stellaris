@@ -25,6 +25,7 @@ const CATEGORIES = [
   'Eclissi',
   'Congiunzioni',
   'Luna & Pianeti',
+  'Asteroidi & Comete',
 ];
 
 export default function EventsScreen() {
@@ -64,17 +65,29 @@ export default function EventsScreen() {
   };
 
   const filteredEvents = useMemo(() => {
-    return events.filter((ev) => {
-      const matchSearch =
-        ev.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        ev.direction.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        ev.description_tips.toLowerCase().includes(searchQuery.toLowerCase());
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
 
-      const matchCategory =
-        selectedCategory === 'Tutti' || ev.category === selectedCategory;
+    return events
+      .filter((ev) => {
+        // In Esplora mostriamo solo eventi in programma da oggi in poi
+        const isUpcoming = new Date(ev.event_date) >= today;
+        if (!isUpcoming) return false;
 
-      return matchSearch && matchCategory;
-    });
+        const matchSearch =
+          ev.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+          ev.direction.toLowerCase().includes(searchQuery.toLowerCase()) ||
+          ev.description_tips.toLowerCase().includes(searchQuery.toLowerCase());
+
+        const matchCategory =
+          selectedCategory === 'Tutti' || ev.category === selectedCategory;
+
+        return matchSearch && matchCategory;
+      })
+      .sort(
+        (a, b) =>
+          new Date(a.event_date).getTime() - new Date(b.event_date).getTime()
+      );
   }, [events, searchQuery, selectedCategory]);
 
   const handleOpenDetail = (event: AstroEvent) => {
