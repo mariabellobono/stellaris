@@ -29,11 +29,16 @@ const StellarisDarkTheme = {
   },
 };
 
+import { useAppUpdates } from '../hooks/useAppUpdates';
+import { UpdateOverlay } from '../components/UpdateOverlay';
+
 export default function RootLayout() {
   const [loaded, error] = useFonts({
     SpaceMono: require('../assets/fonts/SpaceMono-Regular.ttf'),
     ...FontAwesome.font,
   });
+
+  const { isUpdating, updateStatus } = useAppUpdates();
 
   useEffect(() => {
     if (error) throw error;
@@ -70,6 +75,9 @@ export default function RootLayout() {
         />
         <Stack.Screen name="modal" options={{ presentation: 'modal' }} />
       </Stack>
+
+      {/* Modal / Schermata a schermo intero durante l'aggiornamento automatico */}
+      <UpdateOverlay visible={isUpdating} statusText={updateStatus} />
     </ThemeProvider>
   );
 }
