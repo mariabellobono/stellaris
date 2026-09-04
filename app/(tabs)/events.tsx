@@ -1,6 +1,5 @@
-import React, { useState, useEffect, useCallback, useMemo } from 'react';
+import React from 'react';
 import {
-  StyleSheet,
   Text,
   View,
   TextInput,
@@ -11,91 +10,27 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
-import { useRouter } from 'expo-router';
 import { THEME } from '../../constants/theme';
-import { AstroEvent } from '../../types';
-import { SupabaseService } from '../../services/supabase';
-import { StorageService } from '../../services/storage';
 import { OfflineBanner } from '../../components/OfflineBanner';
 import { EventCard } from '../../components/EventCard';
-
-const CATEGORIES = [
-  'Tutti',
-  'Sciami Meteorici',
-  'Eclissi',
-  'Congiunzioni',
-  'Luna & Pianeti',
-  'Asteroidi & Comete',
-];
+import { useEvents } from '../../hooks/useEvents';
+import { eventsStyles as styles } from '../../styles/events.styles';
 
 export default function EventsScreen() {
-  const router = useRouter();
-  const [events, setEvents] = useState<AstroEvent[]>([]);
-  const [searchQuery, setSearchQuery] = useState<string>('');
-  const [selectedCategory, setSelectedCategory] = useState<string>('Tutti');
-  const [favorites, setFavorites] = useState<string[]>([]);
-  const [observed, setObserved] = useState<string[]>([]);
-  const [refreshing, setRefreshing] = useState<boolean>(false);
-
-  const loadEventsData = useCallback(async () => {
-    const [allEvents, favs, obs] = await Promise.all([
-      SupabaseService.getEvents(),
-      StorageService.getFavorites(),
-      StorageService.getObserved(),
-    ]);
-    setEvents(allEvents);
-    setFavorites(favs);
-    setObserved(obs);
-  }, []);
-
-  useEffect(() => {
-    loadEventsData();
-  }, [loadEventsData]);
-
-  const onRefresh = async () => {
-    setRefreshing(true);
-    await loadEventsData();
-    setRefreshing(false);
-  };
-
-  const handleToggleFavorite = async (eventId: string) => {
-    await StorageService.toggleFavorite(eventId);
-    const updated = await StorageService.getFavorites();
-    setFavorites(updated);
-  };
-
-  const filteredEvents = useMemo(() => {
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
-
-    return events
-      .filter((ev) => {
-        // In Esplora mostriamo solo eventi in programma da oggi in poi
-        const isUpcoming = new Date(ev.event_date) >= today;
-        if (!isUpcoming) return false;
-
-        const matchSearch =
-          ev.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-          ev.direction.toLowerCase().includes(searchQuery.toLowerCase()) ||
-          ev.description_tips.toLowerCase().includes(searchQuery.toLowerCase());
-
-        const matchCategory =
-          selectedCategory === 'Tutti' || ev.category === selectedCategory;
-
-        return matchSearch && matchCategory;
-      })
-      .sort(
-        (a, b) =>
-          new Date(a.event_date).getTime() - new Date(b.event_date).getTime()
-      );
-  }, [events, searchQuery, selectedCategory]);
-
-  const handleOpenDetail = (event: AstroEvent) => {
-    router.push({
-      pathname: '/event-detail',
-      params: { eventJson: JSON.stringify(event) },
-    });
-  };
+  const {
+    filteredEvents,
+    searchQuery,
+    setSearchQuery,
+    selectedCategory,
+    setSelectedCategory,
+    categories,
+    favorites,
+    observed,
+    refreshing,
+    onRefresh,
+    handleToggleFavorite,
+    handleOpenDetail,
+  } = useEvents();
 
   return (
     <SafeAreaView style={styles.safeArea}>
@@ -126,7 +61,7 @@ export default function EventsScreen() {
             showsHorizontalScrollIndicator={false}
             contentContainerStyle={styles.chipsContainer}
           >
-            {CATEGORIES.map((cat) => {
+            {categories.map((cat) => {
               const active = selectedCategory === cat;
               return (
                 <TouchableOpacity
@@ -188,80 +123,3 @@ export default function EventsScreen() {
     </SafeAreaView>
   );
 }
-
-const styles = StyleSheet.create({
-  safeArea: {
-    flex: 1,
-    backgroundColor: THEME.colors.background,
-  },
-  container: {
-    flex: 1,
-    paddingHorizontal: THEME.spacing.md,
-  },
-  searchBarContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: THEME.colors.surface,
-    borderRadius: THEME.borderRadius.md,
-    paddingHorizontal: 12,
-    paddingVertical: 10,
-    marginTop: 12,
-    borderWidth: 1,
-    borderColor: THEME.colors.surfaceBorder,
-  },
-  searchInput: {
-    flex: 1,
-    color: '#FFFFFF',
-    fontSize: 15,
-    marginLeft: 10,
-  },
-  chipsWrapper: {
-    marginVertical: 12,
-  },
-  chipsContainer: {
-    paddingRight: 16,
-  },
-  chip: {
-    paddingHorizontal: 14,
-    paddingVertical: 7,
-    borderRadius: 20,
-    backgroundColor: THEME.colors.surface,
-    borderWidth: 1,
-    borderColor: THEME.colors.surfaceBorder,
-    marginRight: 8,
-  },
-  chipActive: {
-    backgroundColor: THEME.colors.accent,
-    borderColor: THEME.colors.accent,
-  },
-  chipText: {
-    color: THEME.colors.textSecondary,
-    fontSize: 13,
-    fontWeight: '600',
-  },
-  chipTextActive: {
-    color: '#FFFFFF',
-    fontWeight: '700',
-  },
-  listContent: {
-    paddingBottom: 24,
-  },
-  emptyState: {
-    paddingVertical: 60,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  emptyTitle: {
-    color: '#FFFFFF',
-    fontSize: 18,
-    fontWeight: '700',
-    marginTop: 16,
-  },
-  emptySubtitle: {
-    color: THEME.colors.textSecondary,
-    fontSize: 14,
-    textAlign: 'center',
-    marginTop: 6,
-    maxWidth: 260,
-  },
-});
