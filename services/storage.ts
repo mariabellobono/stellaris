@@ -1,6 +1,5 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { AstroEvent, NasaApod, WeatherCondition } from '../types';
-import { INITIAL_ASTRONOMICAL_EVENTS } from '../data/mockEvents';
 
 const KEYS = {
   FAVORITES: '@stellaris_favorites',
@@ -15,7 +14,13 @@ export const StorageService = {
   async getFavorites(): Promise<string[]> {
     try {
       const raw = await AsyncStorage.getItem(KEYS.FAVORITES);
-      return raw ? JSON.parse(raw) : [];
+      if (raw) {
+        const parsed = JSON.parse(raw);
+        if (Array.isArray(parsed)) {
+          return parsed.filter((id) => !id.startsWith('e100') && !id.startsWith('mock'));
+        }
+      }
+      return [];
     } catch (error) {
       console.error('Errore lettura preferiti:', error);
       return [];
@@ -46,7 +51,13 @@ export const StorageService = {
   async getObserved(): Promise<string[]> {
     try {
       const raw = await AsyncStorage.getItem(KEYS.OBSERVED);
-      return raw ? JSON.parse(raw) : [];
+      if (raw) {
+        const parsed = JSON.parse(raw);
+        if (Array.isArray(parsed)) {
+          return parsed.filter((id) => !id.startsWith('e100') && !id.startsWith('mock'));
+        }
+      }
+      return [];
     } catch (error) {
       console.error('Errore lettura eventi osservati:', error);
       return [];
@@ -79,21 +90,59 @@ export const StorageService = {
       const raw = await AsyncStorage.getItem(KEYS.CACHED_EVENTS);
       if (raw) {
         const parsed = JSON.parse(raw);
-        if (Array.isArray(parsed) && parsed.length > 0) {
-          return parsed;
+        if (Array.isArray(parsed)) {
+          // Rimuove definitivamente i vecchi mock preset e le immagini anomale (joystick)
+          const sanitized = parsed.filter(
+            (ev) =>
+              ev &&
+              !ev.id.startsWith('e100') &&
+              !ev.id.startsWith('mock') &&
+              !ev.image_url?.includes('1509198397868-475647b2a1e5')
+          );
+          if (sanitized.length !== parsed.length) {
+            await AsyncStorage.setItem(KEYS.CACHED_EVENTS, JSON.stringify(sanitized));
+          }
+          return sanitized;
         }
       }
-      await this.saveCachedEvents(INITIAL_ASTRONOMICAL_EVENTS);
-      return INITIAL_ASTRONOMICAL_EVENTS;
+      return [];
     } catch (error) {
       console.error('Errore lettura cache eventi:', error);
-      return INITIAL_ASTRONOMICAL_EVENTS;
+      return [];
+    }
+  },
+
+  async clearLegacyEvents(): Promise<void> {
+    try {
+      const raw = await AsyncStorage.getItem(KEYS.CACHED_EVENTS);
+      if (raw) {
+        const parsed = JSON.parse(raw);
+        if (Array.isArray(parsed)) {
+          const sanitized = parsed.filter(
+            (ev) =>
+              ev &&
+              !ev.id.startsWith('e100') &&
+              !ev.id.startsWith('mock') &&
+              !ev.image_url?.includes('1509198397868-475647b2a1e5')
+          );
+          await AsyncStorage.setItem(KEYS.CACHED_EVENTS, JSON.stringify(sanitized));
+        }
+      }
+    } catch (error) {
+      console.error('Errore pulizia eventi legacy:', error);
     }
   },
 
   async saveCachedEvents(events: AstroEvent[]): Promise<void> {
     try {
-      await AsyncStorage.setItem(KEYS.CACHED_EVENTS, JSON.stringify(events));
+      const sanitized = events.filter(
+        (ev) =>
+          ev &&
+          !ev.id.startsWith('e100') &&
+          !ev.id.startsWith('mock') &&
+          !ev.image_url?.includes('1509198397868-475647b2a1e5')
+      );
+      await AsyncStorage.setItem(KEYS.CACHED_EVENTS, JSON.stringify(sanitized));
     } catch (error) {
       console.error('Errore salvataggio cache eventi:', error);
     }
