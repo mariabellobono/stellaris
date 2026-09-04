@@ -47,6 +47,15 @@ export const StorageService = {
     return favorites.includes(eventId);
   },
 
+  async saveFavorites(favorites: string[]): Promise<void> {
+    try {
+      const sanitized = favorites.filter((id) => !id.startsWith('e100') && !id.startsWith('mock'));
+      await AsyncStorage.setItem(KEYS.FAVORITES, JSON.stringify(sanitized));
+    } catch (error) {
+      console.error('Errore salvataggio preferiti:', error);
+    }
+  },
+
   // --- OSSERVATI (PASSAPORTO ASTRONOMICO) ---
   async getObserved(): Promise<string[]> {
     try {
@@ -82,6 +91,15 @@ export const StorageService = {
   async isObserved(eventId: string): Promise<boolean> {
     const observed = await this.getObserved();
     return observed.includes(eventId);
+  },
+
+  async saveObserved(observed: string[]): Promise<void> {
+    try {
+      const sanitized = observed.filter((id) => !id.startsWith('e100') && !id.startsWith('mock'));
+      await AsyncStorage.setItem(KEYS.OBSERVED, JSON.stringify(sanitized));
+    } catch (error) {
+      console.error('Errore salvataggio osservati:', error);
+    }
   },
 
   // --- CACHE EVENTI (OFFLINE-FIRST) ---
