@@ -3,30 +3,27 @@
     "name": "Stellaris",
     "slug": "stellaris",
     "version": "1.0.0",
+    "runtimeVersion": {
+      "policy": "appVersion"
+    },
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
     "scheme": "stellaris",
     "userInterfaceStyle": "dark",
-    "newArchEnabled": true,
-    "splash": {
-      "image": "./assets/images/splash-icon.png",
-      "resizeMode": "contain",
-      "backgroundColor": "#0B0D17"
-    },
     "ios": {
       "supportsTablet": true,
+      "bundleIdentifier": "com.stellaris.app",
       "infoPlist": {
         "NSLocationWhenInUseUsageDescription": "Stellaris usa la tua posizione per calcolare la visibilità del cielo notturno e il meteo astronomico locale.",
         "NSCalendarsUsageDescription": "Stellaris ti permette di aggiungere promemoria per gli eventi astronomici al tuo calendario."
       }
     },
     "android": {
+      "package": "com.stellaris.app",
       "adaptiveIcon": {
         "foregroundImage": "./assets/images/adaptive-icon.png",
         "backgroundColor": "#0B0D17"
       },
-      "edgeToEdgeEnabled": true,
-      "predictiveBackGestureEnabled": false,
       "permissions": [
         "ACCESS_COARSE_LOCATION",
         "ACCESS_FINE_LOCATION",
@@ -54,7 +51,14 @@
         }
       ],
       "expo-font",
-      "expo-splash-screen",
+      [
+        "expo-splash-screen",
+        {
+          "image": "./assets/images/splash-icon.png",
+          "resizeMode": "contain",
+          "backgroundColor": "#0B0D17"
+        }
+      ],
       "expo-status-bar",
       "expo-web-browser"
     ],
