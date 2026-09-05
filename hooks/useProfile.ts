@@ -89,6 +89,9 @@ export function useProfile() {
     const { data: authListener } = supabase.auth.onAuthStateChange((_event, session) => {
       if (session?.user?.email) {
         setUserEmail(session.user.email);
+        setShowAuthCard(false);
+        setGoogleLoading(false);
+        setAuthLoading(false);
       } else {
         setUserEmail(null);
       }

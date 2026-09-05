@@ -2,6 +2,7 @@ import { createClient } from '@supabase/supabase-js';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import * as WebBrowser from 'expo-web-browser';
 import * as Linking from 'expo-linking';
+import { makeRedirectUri } from 'expo-auth-session';
 import { AstroEvent, UserEventState } from '../types';
 import { StorageService } from './storage';
 
@@ -161,7 +162,11 @@ export const SupabaseService = {
       throw new Error('Supabase non è configurato con chiavi valide in .env');
     }
 
-    const redirectUrl = Linking.createURL('auth/callback');
+    const redirectUrl = makeRedirectUri({
+      native: 'stellaris://auth/callback',
+      path: 'auth/callback',
+    });
+    console.log('[Supabase OAuth] redirectUrl calcolato:', redirectUrl);
 
     const { data, error } = await supabase.auth.signInWithOAuth({
       provider: 'google',
@@ -176,45 +181,63 @@ export const SupabaseService = {
       throw new Error('Impossibile ottenere l\'URL di autenticazione da Supabase.');
     }
 
-    const result = await WebBrowser.openAuthSessionAsync(data.url, redirectUrl);
+    try {
+      // Timeout di sicurezza (40 secondi) se il browser nativo non invia l'evento di chiusura
+      const timeoutPromise = new Promise<{ type: 'timeout' }>((resolve) =>
+        setTimeout(() => resolve({ type: 'timeout' }), 40000)
+      );
 
-    if (result.type === 'success' && result.url) {
-      const url = result.url;
-      const params: Record<string, string> = {};
-      const hashIndex = url.indexOf('#');
-      const queryIndex = url.indexOf('?');
+      const authPromise = WebBrowser.openAuthSessionAsync(data.url, redirectUrl);
+      const result = await Promise.race([authPromise, timeoutPromise]);
 
-      let searchPart = '';
-      if (hashIndex !== -1) {
-        searchPart = url.substring(hashIndex + 1);
-      } else if (queryIndex !== -1) {
-        searchPart = url.substring(queryIndex + 1);
-      }
+      if (result.type === 'success' && 'url' in result && result.url) {
+        const url = result.url;
+        const params: Record<string, string> = {};
 
-      if (searchPart) {
-        const pairs = searchPart.split('&');
-        for (const pair of pairs) {
-          const [k, v] = pair.split('=');
-          if (k && v) {
-            params[decodeURIComponent(k)] = decodeURIComponent(v);
+        // Estrai parametri sia dalla query string (?...) che dall'hash fragment (#...)
+        const queryString = url.split('#')[0]?.split('?')[1] || '';
+        const hashString = url.split('#')[1] || '';
+
+        const parseSection = (str: string) => {
+          if (!str) return;
+          const pairs = str.split('&');
+          for (const pair of pairs) {
+            const [k, v] = pair.split('=');
+            if (k && v) {
+              params[decodeURIComponent(k)] = decodeURIComponent(v);
+            }
           }
+        };
+
+        parseSection(queryString);
+        parseSection(hashString);
+
+        if (params.access_token && params.refresh_token) {
+          const { data: sessionData, error: sessionErr } = await supabase.auth.setSession({
+            access_token: params.access_token,
+            refresh_token: params.refresh_token,
+          });
+          if (sessionErr) throw sessionErr;
+          return sessionData.user;
+        } else if (params.code) {
+          const { data: codeData, error: codeErr } =
+            await supabase.auth.exchangeCodeForSession(params.code);
+          if (codeErr) throw codeErr;
+          return codeData.user;
         }
       }
-
-      if (params.access_token && params.refresh_token) {
-        const { data: sessionData, error: sessionErr } = await supabase.auth.setSession({
-          access_token: params.access_token,
-          refresh_token: params.refresh_token,
-        });
-        if (sessionErr) throw sessionErr;
-        return sessionData.user;
-      } else if (params.code) {
-        const { data: codeData, error: codeErr } =
-          await supabase.auth.exchangeCodeForSession(params.code);
-        if (codeErr) throw codeErr;
-        return codeData.user;
-      }
+    } finally {
+      try {
+        WebBrowser.dismissAuthSession();
+      } catch {}
     }
+
+    // Controlla se nel frattempo la sessione è già stata impostata (es. dal deep link listener o callback route)
+    const { data: currentSession } = await supabase.auth.getSession();
+    if (currentSession?.session?.user) {
+      return currentSession.session.user;
+    }
+
     return null;
   },
 };
