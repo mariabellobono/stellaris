@@ -1,64 +1,15 @@
-import React, { useEffect, useState } from 'react';
-import { StyleSheet, Text, View, ActivityIndicator, TouchableOpacity } from 'react-native';
-import * as Location from 'expo-location';
+import React from 'react';
+import { Text, View, ActivityIndicator, TouchableOpacity } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { THEME } from '../constants/theme';
-import { WeatherCondition } from '../types';
-import { fetchNightWeather } from '../services/api/weather';
+import { useWeatherHeader } from '../hooks/useWeatherHeader';
+import {
+  weatherHeaderStyles as styles,
+  getBadgeColor,
+} from '../styles/weather-header.styles';
 
 export const WeatherHeader: React.FC = () => {
-  const [weather, setWeather] = useState<WeatherCondition | null>(null);
-  const [loading, setLoading] = useState<boolean>(true);
-
-  const loadLocationAndWeather = async () => {
-    setLoading(true);
-    let lat = 41.9028;
-    let lon = 12.4964;
-    let cityName = 'Roma';
-
-    try {
-      const { status } = await Location.requestForegroundPermissionsAsync();
-      if (status === 'granted') {
-        const location = await Location.getCurrentPositionAsync({
-          accuracy: Location.Accuracy.Balanced,
-        });
-        lat = location.coords.latitude;
-        lon = location.coords.longitude;
-
-        const geocode = await Location.reverseGeocodeAsync({
-          latitude: lat,
-          longitude: lon,
-        });
-
-        if (geocode && geocode.length > 0) {
-          cityName = geocode[0].city || geocode[0].region || 'Tua Posizione';
-        }
-      }
-    } catch (e) {
-      console.warn('Geolocalizzazione non disponibile, uso default:', e);
-    }
-
-    const data = await fetchNightWeather(lat, lon, cityName);
-    setWeather(data);
-    setLoading(false);
-  };
-
-  useEffect(() => {
-    loadLocationAndWeather();
-  }, []);
-
-  const getBadgeColor = (status: WeatherCondition['skyStatus']) => {
-    switch (status) {
-      case 'Ottimale':
-        return THEME.colors.success;
-      case 'Buono':
-        return '#3A86FF';
-      case 'Parzialmente Nuvoloso':
-        return THEME.colors.warning;
-      case 'Coperto':
-        return THEME.colors.accent;
-    }
-  };
+  const { weather, loading, loadLocationAndWeather } = useWeatherHeader();
 
   return (
     <View style={styles.container}>
@@ -130,103 +81,3 @@ export const WeatherHeader: React.FC = () => {
     </View>
   );
 };
-
-const styles = StyleSheet.create({
-  container: {
-    backgroundColor: THEME.colors.surface,
-    borderRadius: THEME.borderRadius.lg,
-    padding: THEME.spacing.md,
-    borderWidth: 1,
-    borderColor: THEME.colors.surfaceBorder,
-    marginBottom: THEME.spacing.md,
-  },
-  topRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: THEME.spacing.sm,
-  },
-  locationContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-  cityText: {
-    color: THEME.colors.text,
-    fontSize: 15,
-    fontWeight: '700',
-    marginLeft: 6,
-  },
-  loadingBox: {
-    paddingVertical: 16,
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  loadingText: {
-    color: THEME.colors.textSecondary,
-    fontSize: 13,
-    marginLeft: 10,
-  },
-  contentRow: {
-    marginTop: 4,
-  },
-  visibilityCard: {},
-  visibilityHeader: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginBottom: 8,
-  },
-  visibilityLabel: {
-    color: THEME.colors.textSecondary,
-    fontSize: 13,
-    fontWeight: '500',
-    marginLeft: 6,
-  },
-  metricRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    marginBottom: 10,
-  },
-  visibilityPercent: {
-    color: THEME.colors.text,
-    fontSize: 34,
-    fontWeight: '800',
-    letterSpacing: -0.5,
-  },
-  statusBadge: {
-    paddingHorizontal: 12,
-    paddingVertical: 5,
-    borderRadius: THEME.borderRadius.round,
-  },
-  statusText: {
-    color: '#FFFFFF',
-    fontSize: 12,
-    fontWeight: '700',
-    textTransform: 'uppercase',
-  },
-  progressBarBackground: {
-    height: 6,
-    backgroundColor: '#25293A',
-    borderRadius: 3,
-    overflow: 'hidden',
-    marginBottom: 10,
-  },
-  progressBarFill: {
-    height: '100%',
-    borderRadius: 3,
-  },
-  statsFooter: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    marginTop: 2,
-  },
-  footerText: {
-    color: THEME.colors.textSecondary,
-    fontSize: 12,
-  },
-  boldText: {
-    color: THEME.colors.text,
-    fontWeight: '600',
-  },
-});

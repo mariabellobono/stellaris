@@ -76,6 +76,7 @@ export default function HomeScreen() {
           <Text style={styles.sectionTitle}>Tracciamento Satelliti</Text>
         </View>
         <IssWidget />
+
       </ScrollView>
     </SafeAreaView>
   );

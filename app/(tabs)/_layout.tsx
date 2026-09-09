@@ -28,11 +28,39 @@ export default function TabLayout() {
       <Tabs.Screen
         name="events"
         options={{
-          title: 'Esplora',
+          title: 'Eventi',
           headerTitle: 'Eventi Celesti',
           tabBarIcon: ({ color, focused }) => (
             <Ionicons
               name={focused ? 'telescope' : 'telescope-outline'}
+              size={22}
+              color={color}
+            />
+          ),
+        }}
+      />
+      <Tabs.Screen
+        name="astro-dex"
+        options={{
+          title: 'Astro-Dex',
+          headerShown: false,
+          tabBarIcon: ({ color, focused }) => (
+            <Ionicons
+              name={focused ? 'sparkles' : 'sparkles-outline'}
+              size={22}
+              color={color}
+            />
+          ),
+        }}
+      />
+      <Tabs.Screen
+        name="light-pollution"
+        options={{
+          title: 'Mappa',
+          headerShown: false,
+          tabBarIcon: ({ color, focused }) => (
+            <Ionicons
+              name={focused ? 'map' : 'map-outline'}
               size={22}
               color={color}
             />

@@ -77,3 +77,153 @@ export const eventsStyles = StyleSheet.create({
     maxWidth: 260,
   },
 });
+
+export const eventCardStyles = StyleSheet.create({
+  // COMPACT (CAROSELLO HOME)
+  compactCard: {
+    width: 240,
+    height: 180,
+    borderRadius: THEME.borderRadius.lg,
+    overflow: 'hidden',
+    backgroundColor: THEME.colors.surface,
+    marginRight: 12,
+    borderWidth: 1,
+    borderColor: THEME.colors.surfaceBorder,
+  },
+  compactImage: {
+    width: '100%',
+    height: '100%',
+  },
+  compactOverlay: {
+    position: 'absolute',
+    bottom: 0,
+    left: 0,
+    right: 0,
+    backgroundColor: 'rgba(11, 13, 23, 0.90)',
+    padding: 12,
+    borderTopWidth: 1,
+    borderTopColor: 'rgba(255, 255, 255, 0.08)',
+  },
+  compactBadgeRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 4,
+  },
+  compactTitle: {
+    color: '#FFFFFF',
+    fontSize: 14,
+    fontWeight: '700',
+    marginBottom: 6,
+  },
+  compactFooter: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  compactDate: {
+    color: THEME.colors.textSecondary,
+    fontSize: 11,
+    marginLeft: 4,
+  },
+
+  // FULL VERTICAL CARD (TAB ESPLORA)
+  card: {
+    backgroundColor: THEME.colors.surface,
+    borderRadius: THEME.borderRadius.lg,
+    overflow: 'hidden',
+    marginBottom: 16,
+    borderWidth: 1,
+    borderColor: THEME.colors.surfaceBorder,
+  },
+  image: {
+    width: '100%',
+    height: 160,
+  },
+  cardContent: {
+    padding: 16,
+  },
+  cardHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 8,
+  },
+  categoryBadge: {
+    backgroundColor: 'rgba(230, 57, 70, 0.15)',
+    paddingHorizontal: 8,
+    paddingVertical: 3,
+    borderRadius: 4,
+    borderWidth: 1,
+    borderColor: 'rgba(230, 57, 70, 0.3)',
+  },
+  categoryText: {
+    color: THEME.colors.accent,
+    fontSize: 11,
+    fontWeight: '700',
+    letterSpacing: 0.5,
+  },
+  actionRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  observedTag: {
+    backgroundColor: 'rgba(255, 183, 3, 0.2)',
+    paddingHorizontal: 8,
+    paddingVertical: 3,
+    borderRadius: 4,
+    marginRight: 8,
+  },
+  observedText: {
+    color: THEME.colors.gold,
+    fontSize: 11,
+    fontWeight: '700',
+  },
+  pastTag: {
+    backgroundColor: 'rgba(107, 114, 128, 0.2)',
+    paddingHorizontal: 7,
+    paddingVertical: 3,
+    borderRadius: 4,
+    marginRight: 6,
+    borderWidth: 1,
+    borderColor: 'rgba(107, 114, 128, 0.3)',
+  },
+  pastText: {
+    color: '#9CA3AF',
+    fontSize: 10,
+    fontWeight: '700',
+  },
+  favButton: {
+    padding: 2,
+  },
+  title: {
+    color: '#FFFFFF',
+    fontSize: 17,
+    fontWeight: '700',
+    marginBottom: 10,
+    lineHeight: 22,
+  },
+  metaGrid: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    marginBottom: 8,
+  },
+  metaItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  metaText: {
+    color: '#E0E0E0',
+    fontSize: 13,
+    marginLeft: 6,
+  },
+  instrumentRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginTop: 4,
+  },
+  instrumentText: {
+    color: THEME.colors.textSecondary,
+    fontSize: 12,
+    marginLeft: 6,
+  },
+});

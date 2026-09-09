@@ -1,6 +1,5 @@
 import React from 'react';
 import {
-  StyleSheet,
   Text,
   View,
   Image,
@@ -9,6 +8,7 @@ import {
 import { Ionicons } from '@expo/vector-icons';
 import { THEME } from '../constants/theme';
 import { AstroEvent } from '../types';
+import { eventCardStyles as styles } from '../styles/events.styles';
 
 interface EventCardProps {
   event: AstroEvent;
@@ -61,27 +61,12 @@ export const EventCard: React.FC<EventCardProps> = ({
         />
         <View style={styles.compactOverlay}>
           <View style={styles.compactBadgeRow}>
-            <View style={styles.categoryBadge}>
-              <Text style={styles.categoryText}>{event.category}</Text>
-            </View>
-            <View style={styles.actionRow}>
-              {isPast && (
-                <View style={styles.pastTag}>
-                  <Text style={styles.pastText}>Passato</Text>
-                </View>
-              )}
-              {isObserved && (
-                <View style={styles.observedTag}>
-                  <Text style={styles.observedText}>🌟 Visto</Text>
-                </View>
-              )}
-            </View>
+            <Text style={styles.compactTitle} numberOfLines={1}>
+              {event.title}
+            </Text>
           </View>
-          <Text style={styles.compactTitle} numberOfLines={2}>
-            {event.title}
-          </Text>
           <View style={styles.compactFooter}>
-            <Ionicons name="time-outline" size={12} color={THEME.colors.textSecondary} />
+            <Ionicons name="time-outline" size={12} color={THEME.colors.accent} />
             <Text style={styles.compactDate}>{formatDate(event.event_date)}</Text>
           </View>
         </View>
@@ -91,7 +76,7 @@ export const EventCard: React.FC<EventCardProps> = ({
 
   return (
     <TouchableOpacity
-      activeOpacity={0.88}
+      activeOpacity={0.85}
       onPress={onPress}
       style={styles.card}
     >
@@ -100,40 +85,44 @@ export const EventCard: React.FC<EventCardProps> = ({
         style={styles.image}
         resizeMode="cover"
       />
-
       <View style={styles.cardContent}>
         <View style={styles.cardHeader}>
           <View style={styles.categoryBadge}>
             <Text style={styles.categoryText}>{event.category}</Text>
           </View>
+
           <View style={styles.actionRow}>
-            {isPast && (
-              <View style={styles.pastTag}>
-                <Text style={styles.pastText}>Passato</Text>
-              </View>
-            )}
             {isObserved && (
               <View style={styles.observedTag}>
-                <Text style={styles.observedText}>🌟 Visto</Text>
+                <Text style={styles.observedText}>Osservato 🌟</Text>
               </View>
             )}
+
+            {isPast && (
+              <View style={styles.pastTag}>
+                <Text style={styles.pastText}>Concluso</Text>
+              </View>
+            )}
+
             {onToggleFavorite && (
               <TouchableOpacity
                 onPress={onToggleFavorite}
-                hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
                 style={styles.favButton}
+                hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
               >
                 <Ionicons
                   name={isFavorite ? 'heart' : 'heart-outline'}
                   size={22}
-                  color={isFavorite ? THEME.colors.accent : THEME.colors.textSecondary}
+                  color={isFavorite ? THEME.colors.accent : THEME.colors.textMuted}
                 />
               </TouchableOpacity>
             )}
           </View>
         </View>
 
-        <Text style={styles.title}>{event.title}</Text>
+        <Text style={styles.title} numberOfLines={2}>
+          {event.title}
+        </Text>
 
         <View style={styles.metaGrid}>
           <View style={styles.metaItem}>
@@ -154,153 +143,3 @@ export const EventCard: React.FC<EventCardProps> = ({
     </TouchableOpacity>
   );
 };
-
-const styles = StyleSheet.create({
-  // COMPACT (CAROSELLO HOME)
-  compactCard: {
-    width: 240,
-    height: 180,
-    borderRadius: THEME.borderRadius.lg,
-    overflow: 'hidden',
-    backgroundColor: THEME.colors.surface,
-    marginRight: 12,
-    borderWidth: 1,
-    borderColor: THEME.colors.surfaceBorder,
-  },
-  compactImage: {
-    width: '100%',
-    height: '100%',
-  },
-  compactOverlay: {
-    position: 'absolute',
-    bottom: 0,
-    left: 0,
-    right: 0,
-    backgroundColor: 'rgba(11, 13, 23, 0.90)',
-    padding: 12,
-    borderTopWidth: 1,
-    borderTopColor: 'rgba(255, 255, 255, 0.08)',
-  },
-  compactBadgeRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: 4,
-  },
-  compactTitle: {
-    color: '#FFFFFF',
-    fontSize: 14,
-    fontWeight: '700',
-    marginBottom: 6,
-  },
-  compactFooter: {
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-  compactDate: {
-    color: THEME.colors.textSecondary,
-    fontSize: 11,
-    marginLeft: 4,
-  },
-
-  // FULL VERTICAL CARD (TAB ESPLORA)
-  card: {
-    backgroundColor: THEME.colors.surface,
-    borderRadius: THEME.borderRadius.lg,
-    overflow: 'hidden',
-    marginBottom: 16,
-    borderWidth: 1,
-    borderColor: THEME.colors.surfaceBorder,
-  },
-  image: {
-    width: '100%',
-    height: 160,
-  },
-  cardContent: {
-    padding: 16,
-  },
-  cardHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: 8,
-  },
-  categoryBadge: {
-    backgroundColor: 'rgba(230, 57, 70, 0.15)',
-    paddingHorizontal: 8,
-    paddingVertical: 3,
-    borderRadius: 4,
-    borderWidth: 1,
-    borderColor: 'rgba(230, 57, 70, 0.3)',
-  },
-  categoryText: {
-    color: THEME.colors.accent,
-    fontSize: 11,
-    fontWeight: '700',
-    letterSpacing: 0.5,
-  },
-  actionRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-  observedTag: {
-    backgroundColor: 'rgba(255, 183, 3, 0.2)',
-    paddingHorizontal: 8,
-    paddingVertical: 3,
-    borderRadius: 4,
-    marginRight: 8,
-  },
-  observedText: {
-    color: THEME.colors.gold,
-    fontSize: 11,
-    fontWeight: '700',
-  },
-  pastTag: {
-    backgroundColor: 'rgba(107, 114, 128, 0.2)',
-    paddingHorizontal: 7,
-    paddingVertical: 3,
-    borderRadius: 4,
-    marginRight: 6,
-    borderWidth: 1,
-    borderColor: 'rgba(107, 114, 128, 0.3)',
-  },
-  pastText: {
-    color: '#9CA3AF',
-    fontSize: 10,
-    fontWeight: '700',
-  },
-  favButton: {
-    padding: 2,
-  },
-  title: {
-    color: '#FFFFFF',
-    fontSize: 17,
-    fontWeight: '700',
-    marginBottom: 10,
-    lineHeight: 22,
-  },
-  metaGrid: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    marginBottom: 8,
-  },
-  metaItem: {
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-  metaText: {
-    color: '#E0E0E0',
-    fontSize: 13,
-    marginLeft: 6,
-  },
-  instrumentRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginTop: 4,
-  },
-  instrumentText: {
-    color: THEME.colors.textSecondary,
-    fontSize: 12,
-    marginLeft: 6,
-  },
-});

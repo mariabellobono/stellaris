@@ -166,6 +166,44 @@ export const profileStyles = StyleSheet.create({
     backgroundColor: THEME.colors.surfaceBorder,
   },
 
+  // --- ASTRO-DEX BANNER ---
+  dexBanner: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    backgroundColor: THEME.colors.surface,
+    borderRadius: THEME.borderRadius.lg,
+    padding: 14,
+    marginBottom: 16,
+    borderWidth: 1,
+    borderColor: 'rgba(255, 183, 3, 0.3)',
+  },
+  dexBannerLeft: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    flex: 1,
+  },
+  dexBannerIcon: {
+    width: 38,
+    height: 38,
+    borderRadius: 19,
+    backgroundColor: 'rgba(255, 183, 3, 0.12)',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginRight: 12,
+  },
+  dexBannerTitle: {
+    color: '#FFFFFF',
+    fontSize: 14,
+    fontWeight: '700',
+  },
+  dexBannerSubtitle: {
+    color: THEME.colors.textSecondary,
+    fontSize: 11,
+    marginTop: 2,
+  },
+
+
   // --- TABS SWITCHER ---
   tabsSwitcher: {
     flexDirection: 'row',

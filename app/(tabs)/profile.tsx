@@ -9,6 +9,7 @@ import {
   RefreshControl,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { THEME } from '../../constants/theme';
 import { OfflineBanner } from '../../components/OfflineBanner';
@@ -17,7 +18,9 @@ import { useProfile } from '../../hooks/useProfile';
 import { profileStyles as styles } from '../../styles/profile.styles';
 
 export default function ProfileScreen() {
+  const router = useRouter();
   const {
+
     activeTab,
     setActiveTab,
     favoriteIds,
@@ -229,8 +232,30 @@ export default function ProfileScreen() {
           </View>
         </View>
 
+        {/* Banner Accesso Rapido Astro-Dex */}
+        <TouchableOpacity
+          style={styles.dexBanner}
+          activeOpacity={0.85}
+          onPress={() => router.push('/(tabs)/astro-dex' as any)}
+        >
+          <View style={styles.dexBannerLeft}>
+
+            <View style={styles.dexBannerIcon}>
+              <Ionicons name="sparkles" size={20} color={THEME.colors.gold} />
+            </View>
+            <View>
+              <Text style={styles.dexBannerTitle}>Catalogo Astro-Dex ✦</Text>
+              <Text style={styles.dexBannerSubtitle}>
+                Collezione permanente delle carte ed eventi astronomici
+              </Text>
+            </View>
+          </View>
+          <Ionicons name="chevron-forward" size={18} color={THEME.colors.textSecondary} />
+        </TouchableOpacity>
+
         {/* Tab Switcher Interno (Preferiti vs Passaporto Osservati) */}
         <View style={styles.tabsSwitcher}>
+
           <TouchableOpacity
             style={[
               styles.tabSwitchItem,

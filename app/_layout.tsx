@@ -73,6 +73,13 @@ export default function RootLayout() {
             headerBackTitle: 'Indietro',
           }}
         />
+        <Stack.Screen
+          name="iss-compass"
+          options={{
+            title: 'Bussola ISS',
+            headerShown: false,
+          }}
+        />
         <Stack.Screen name="modal" options={{ presentation: 'modal' }} />
       </Stack>
 
