@@ -1,5 +1,5 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { AstroEvent, NasaApod, WeatherCondition } from '../types';
+import { AstroEvent, NasaApod, WeatherCondition, DexCard } from '../types';
 
 const KEYS = {
   FAVORITES: '@stellaris_favorites',
@@ -7,7 +7,10 @@ const KEYS = {
   CACHED_EVENTS: '@stellaris_cached_events',
   CACHED_WEATHER: '@stellaris_cached_weather',
   CACHED_APOD: '@stellaris_cached_apod',
+  DEX_CARDS: '@stellaris_dex_cards',
+  DEX_UNLOCKS: '@stellaris_dex_unlocks',
 };
+
 
 export const StorageService = {
   // --- PREFERITI ---
@@ -201,4 +204,74 @@ export const StorageService = {
       console.error('Errore salvataggio APOD cache:', error);
     }
   },
+
+  // --- ASTRO-DEX (COLLEZIONISMO OFFLINE-FIRST) ---
+  async getDexUnlocks(): Promise<string[]> {
+    try {
+      const raw = await AsyncStorage.getItem(KEYS.DEX_UNLOCKS);
+      if (raw) {
+        const parsed = JSON.parse(raw);
+        if (Array.isArray(parsed)) {
+          return parsed;
+        }
+      }
+      return [];
+    } catch (error) {
+      console.error('Errore lettura sblocchi Astro-Dex:', error);
+      return [];
+    }
+  },
+
+  async saveDexUnlocks(cardIds: string[]): Promise<void> {
+    try {
+      await AsyncStorage.setItem(KEYS.DEX_UNLOCKS, JSON.stringify(cardIds));
+    } catch (error) {
+      console.error('Errore salvataggio sblocchi Astro-Dex:', error);
+    }
+  },
+
+  async isCardUnlocked(cardId: string): Promise<boolean> {
+    const unlocks = await this.getDexUnlocks();
+    return unlocks.includes(cardId);
+  },
+
+  async unlockCardLocally(cardId: string): Promise<boolean> {
+    try {
+      const current = await this.getDexUnlocks();
+      if (!current.includes(cardId)) {
+        const updated = [...current, cardId];
+        await AsyncStorage.setItem(KEYS.DEX_UNLOCKS, JSON.stringify(updated));
+        return true;
+      }
+      return false;
+    } catch (error) {
+      console.error('Errore sblocco locale carta:', error);
+      return false;
+    }
+  },
+
+  async getCachedDexCards(): Promise<DexCard[]> {
+    try {
+      const raw = await AsyncStorage.getItem(KEYS.DEX_CARDS);
+      if (raw) {
+        const parsed = JSON.parse(raw);
+        if (Array.isArray(parsed)) {
+          return parsed;
+        }
+      }
+      return [];
+    } catch (error) {
+      console.error('Errore lettura cache dex_cards:', error);
+      return [];
+    }
+  },
+
+  async saveCachedDexCards(cards: DexCard[]): Promise<void> {
+    try {
+      await AsyncStorage.setItem(KEYS.DEX_CARDS, JSON.stringify(cards));
+    } catch (error) {
+      console.error('Errore salvataggio cache dex_cards:', error);
+    }
+  },
 };
+
